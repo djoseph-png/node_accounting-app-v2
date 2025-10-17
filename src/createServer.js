@@ -151,7 +151,7 @@ function createServer() {
       return res.status(400).json({ error: 'Invalid userId' });
     }
 
-    // Check if user exists - return 400 per test requirement
+    // Check if user exists - return 400 per test expectation
     const user = users.find((u) => u.id === userIdNum);
 
     if (!user) {
