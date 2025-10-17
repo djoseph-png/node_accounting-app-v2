@@ -123,14 +123,36 @@ function createServer() {
     res.status(200).json(expense);
   });
 
+  // POST /expenses - Create a new expense
   app.post('/expenses', (req, res) => {
     const { userId, spentAt, title, amount, category, note } = req.body;
 
-    if (!userId || !spentAt || !title || !amount || !category) {
+    // Validate required fields explicitly (not falsy check to allow 0)
+    if (
+      userId === undefined ||
+      userId === null ||
+      spentAt === undefined ||
+      spentAt === null ||
+      title === undefined ||
+      title === null ||
+      amount === undefined ||
+      amount === null ||
+      category === undefined ||
+      category === null
+    ) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const user = users.find((u) => u.id === userId);
+    // Normalize userId to number for comparison
+    const userIdNum = Number(userId);
+
+    // If userId is not a valid number, return 400
+    if (isNaN(userIdNum)) {
+      return res.status(400).json({ error: 'Invalid userId' });
+    }
+
+    // Check if user exists - return 400 per test requirement
+    const user = users.find((u) => u.id === userIdNum);
 
     if (!user) {
       return res.status(400).json({ error: 'User not found' });
@@ -138,7 +160,7 @@ function createServer() {
 
     const newExpense = {
       id: expenseIdCounter++,
-      userId,
+      userId: userIdNum,
       spentAt,
       title,
       amount,
@@ -159,38 +181,36 @@ function createServer() {
       return res.status(404).json({ error: 'Expense not found' });
     }
 
-    if (userId !== undefined) {
-      const user = users.find((u) => u.id === userId);
+    if (userId !== undefined && userId !== null) {
+      const userIdNum = Number(userId);
+      const user = users.find((u) => u.id === userIdNum);
 
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
-      expense.userId = userId;
+      expense.userId = userIdNum;
     }
 
-    if (spentAt !== undefined) {
-      if (!spentAt) {
+    if (spentAt !== undefined && spentAt !== null) {
+      if (spentAt === '') {
         return res.status(400).json({ error: 'spentAt cannot be empty' });
       }
       expense.spentAt = spentAt;
     }
 
-    if (title !== undefined) {
-      if (!title) {
+    if (title !== undefined && title !== null) {
+      if (title === '') {
         return res.status(400).json({ error: 'title cannot be empty' });
       }
       expense.title = title;
     }
 
-    if (amount !== undefined) {
-      if (!amount) {
-        return res.status(400).json({ error: 'amount cannot be empty' });
-      }
+    if (amount !== undefined && amount !== null) {
       expense.amount = amount;
     }
 
-    if (category !== undefined) {
-      if (!category) {
+    if (category !== undefined && category !== null) {
+      if (category === '') {
         return res.status(400).json({ error: 'category cannot be empty' });
       }
       expense.category = category;
